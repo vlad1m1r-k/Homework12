@@ -1,9 +1,13 @@
 package ua.kiev.prog.homework12.part4;
 
 import java.io.*;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 public class Main {
@@ -12,38 +16,17 @@ public class Main {
     public static void main(String[] args) {
         group = new Group();
         fillGroup();
-        Scanner keyboardScanner = new Scanner(System.in);
-        String choose = "";
-        do {
-            System.out.println("1 - Add Student, 2 - Sort, 3 - Print, 4 - Delete, 5 - Summon Voenkom, 6 - Save, 7 - Load, 8 - Filter, 0 - Exit");
-            System.out.print(">");
-            choose = keyboardScanner.nextLine();
-            switch (choose) {
-                case "1":
-                    addStudent();
-                    break;
-                case "2":
-                    sortStudents();
-                    break;
-                case "3":
-                    printStudents();
-                    break;
-                case "4":
-                    deleteStudent();
-                    break;
-                case "5":
-                    summonVoenkom();
-                    break;
-                case "6":
-                    saveGroup();
-                    break;
-                case "7":
-                    loadGroup();
-                    break;
-                case "8":
-                    filterGroup();
+        ExecutorService eService = Executors.newFixedThreadPool(4);
+        try (ServerSocket serverSocket = new ServerSocket(8080)){
+            System.out.println("Server started.");
+            while (true){
+                Socket clientSocket = serverSocket.accept();
+                new HttpClient(group, eService, clientSocket);
             }
-        } while (!choose.equals("0"));
+        } catch (IOException ioe){
+            ioe.printStackTrace();
+        }
+     //       System.out.println("1 - Add Student, 2 - Sort, 3 - Print, 4 - Delete, 5 - Summon Voenkom, 6 - Save, 7 - Load, 8 - Filter, 0 - Exit");
     }
 
     private static void filterGroup() {
