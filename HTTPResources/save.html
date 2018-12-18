@@ -7,13 +7,16 @@
 <br>
 <br>
 Input group name:
-<form action="/" method="post" target="_self">
+<form action="/" method="post" target="result">
     <input type="hidden" name="action" value="save">
-    <input type="text" name="groupname" title="Group Name" maxlength="8" required pattern="\w+">
+    <input type="text" name="groupname" title="Group Name" maxlength="10" required pattern="\w+">
     <br>
     <br>
     <input type="submit" value="Save">
 </form>
+<div>
+<iframe name="result" frameborder="0" width="230" height="40"></iframe>
+</div>
 <a href="/">Back to main page</a>
 </body>
 </html>

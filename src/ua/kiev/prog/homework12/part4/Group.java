@@ -18,6 +18,10 @@ public class Group implements Serializable {
         return groupName;
     }
 
+    public void setGroupName(String groupName) {
+        this.groupName = groupName;
+    }
+
     public void add(Student student) {
         if (students.size() > 9) throw new StudentOperationException(student);
         students.add(student);

@@ -1,6 +1,6 @@
 package ua.kiev.prog.homework12.part4;
 
-import java.io.*;
+import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.List;
@@ -10,22 +10,21 @@ import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 public class Main {
-    private static Group group;
-
+    private static CurrentGroup currentGroup;
     public static void main(String[] args) {
-        group = new Group("Default");
+        currentGroup = new CurrentGroup(new Group("Default"));
         fillGroup();
         ExecutorService eService = Executors.newFixedThreadPool(4);
         try (ServerSocket serverSocket = new ServerSocket(8080)){
             System.out.println("Server started.");
             while (true){
                 Socket clientSocket = serverSocket.accept();
-                new HttpClient(group, eService, clientSocket);
+                new HttpClient(currentGroup, eService, clientSocket);
             }
         } catch (IOException ioe){
             ioe.printStackTrace();
         }
-     //       System.out.println("1 - Add Student, 2 - Sort, 5 - Summon Voenkom, 6 - Save, 7 - Load, 8 - Filter");
+     //       System.out.println("1 - Add Student, 2 - Sort, 5 - Summon Voenkom, 8 - Filter");
     }
 
     private static void filterGroup() {
@@ -33,7 +32,7 @@ public class Main {
         System.out.print("Enter first letter of student LastName: ");
         String letter = keyboardScanner.nextLine();
         if (letter.length() != 0){
-            List<Student> filteredList = group.getStudents().stream()
+            List<Student> filteredList = currentGroup.getGroup().getStudents().stream()
                     .filter(s -> s.getLastName().toLowerCase().charAt(0) == letter.toLowerCase().charAt(0))
                     .collect(Collectors.toList());
             String formattedStudents = "";
@@ -72,7 +71,7 @@ public class Main {
             return;
         }
         try {
-            group.add(new Student(args[0], args[1], age, sex, academPerform));
+            currentGroup.getGroup().add(new Student(args[0], args[1], age, sex, academPerform));
         } catch (StudentOperationException soe) {
             System.out.println("Can not add more students.");
         }
@@ -84,26 +83,26 @@ public class Main {
         String choose = keyboardScanner.nextLine();
         switch (choose) {
             case "1":
-                group.sort(Parameters.FIRSTNAME);
+                currentGroup.getGroup().sort(Parameters.FIRSTNAME);
                 break;
             case "2":
-                group.sort(Parameters.LASTNAME);
+                currentGroup.getGroup().sort(Parameters.LASTNAME);
                 break;
             case "3":
-                group.sort(Parameters.AGE);
+                currentGroup.getGroup().sort(Parameters.AGE);
                 break;
             case "4":
-                group.sort(Parameters.SEX);
+                currentGroup.getGroup().sort(Parameters.SEX);
                 break;
             case "5":
-                group.sort(Parameters.PERFORMANCE);
+                currentGroup.getGroup().sort(Parameters.PERFORMANCE);
                 break;
         }
     }
 
     private static void summonVoenkom() {
         AngryVoenkom angryVoenkom = new AngryVoenkom();
-        List<Student> students = angryVoenkom.catchStudents(group);
+        List<Student> students = angryVoenkom.catchStudents(currentGroup.getGroup());
         String formattedStudents = "";
         for (Student student : students) {
             formattedStudents += student + "\n";
@@ -112,60 +111,17 @@ public class Main {
         System.out.println(formattedStudents);
     }
 
-    private static void saveGroup() {
-        Scanner keyboardScanner = new Scanner(System.in);
-        System.out.print("Group name: ");
-        String name = keyboardScanner.nextLine();
-        File file = new File(name + ".sav");
-        if (file.exists() && !file.isDirectory()) file.delete();
-        try (ObjectOutputStream output = new ObjectOutputStream(new FileOutputStream(file))) {
-            output.writeObject(group);
-            System.out.println("Saved to: " + file.getAbsolutePath());
-        } catch (IOException e) {
-            System.out.println("Error saving file.");
-        }
-    }
-
-    private static void loadGroup() {
-        File dir = new File(".");
-        File[] groups = dir.listFiles(path -> {
-            if (!path.isDirectory() && !(path.getName().lastIndexOf(".") == -1) && path.getName().substring(path.getName().lastIndexOf(".")).equalsIgnoreCase(".sav"))
-                return true;
-            return false;
-        });
-        System.out.print("Saved groups: ");
-        for (File file : groups) {
-            System.out.print(file.getName().substring(0, file.getName().lastIndexOf(".")) + " ");
-        }
-        System.out.println();
-        System.out.print("Enter group name to load: ");
-        Scanner keyboardScanner = new Scanner(System.in);
-        String name = keyboardScanner.nextLine();
-        File file = new File(name + ".sav");
-        if (!file.exists()) {
-            System.out.println("Save not found.");
-            return;
-        }
-        try (ObjectInputStream input = new ObjectInputStream(new FileInputStream(file))) {
-            group = (Group) input.readObject();
-        } catch (IOException e) {
-            System.out.println("Error load file.");
-        } catch (ClassNotFoundException cnfe) {
-            System.out.println("Can not load object.");
-        }
-    }
-
     private static void fillGroup() {
         try {
-            group.add(new Student("Ivan", "Karko", 18, Sex.MALE, 90));
-            group.add(new Student("Lena", "Baskova", 19, Sex.FEMALE, 60));
-            group.add(new Student("Petr", "Azirov", 18, Sex.MALE, 70));
-            group.add(new Student("Uy", "Chang", 18, Sex.FEMALE, 55));
-            group.add(new Student("Petr", "Ali", 18, Sex.MALE, 79));
-            group.add(new Student("Inna", "Torba", 18, Sex.FEMALE, 100));
-            group.add(new Student("Petr", "Kent", 19, Sex.MALE, 100));
-            group.add(new Student("Tom", "Star", 17, Sex.MALE, 30));
-            group.add(new Student("Yas", "Barto", 19, Sex.MALE, 45));
+            currentGroup.getGroup().add(new Student("Ivan", "Karko", 18, Sex.MALE, 90));
+            currentGroup.getGroup().add(new Student("Lena", "Baskova", 19, Sex.FEMALE, 60));
+            currentGroup.getGroup().add(new Student("Petr", "Azirov", 18, Sex.MALE, 70));
+            currentGroup.getGroup().add(new Student("Uy", "Chang", 18, Sex.FEMALE, 55));
+            currentGroup.getGroup().add(new Student("Petr", "Ali", 18, Sex.MALE, 79));
+            currentGroup.getGroup().add(new Student("Inna", "Torba", 18, Sex.FEMALE, 100));
+            currentGroup.getGroup().add(new Student("Petr", "Kent", 19, Sex.MALE, 100));
+            currentGroup.getGroup().add(new Student("Tom", "Star", 17, Sex.MALE, 30));
+            currentGroup.getGroup().add(new Student("Yas", "Barto", 19, Sex.MALE, 45));
         } catch (StudentOperationException soe) {
             System.out.println("Error adding " + soe.getObject().toString());
             System.out.println("Cause " + soe.getMessage());
