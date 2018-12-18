@@ -8,6 +8,15 @@ import java.util.List;
 
 public class Group implements Serializable {
     private List<Student> students = new ArrayList<>();
+    private String groupName;
+
+    public Group(String groupName) {
+        this.groupName = groupName;
+    }
+
+    public String getGroupName() {
+        return groupName;
+    }
 
     public void add(Student student) {
         if (students.size() > 9) throw new StudentOperationException(student);
@@ -19,7 +28,7 @@ public class Group implements Serializable {
     }
 
     public int getIndex(String lastName) {
-        for (int i = 0; i < students.size() - 1; i++) {
+        for (int i = 0; i < students.size(); i++) {
             if (students.get(i).getLastName().equalsIgnoreCase(lastName)) return i;
         }
         throw new InputMismatchException();
@@ -72,10 +81,10 @@ public class Group implements Serializable {
 
     @Override
     public String toString() {
-        String formattedStudents = "";
+        StringBuilder formattedStudents = new StringBuilder();
         for (Student student : students) {
-            formattedStudents += student + "\n";
+            formattedStudents.append(student + "\n");
         }
-        return formattedStudents;
+        return formattedStudents.toString();
     }
 }

@@ -3,7 +3,6 @@ package ua.kiev.prog.homework12.part4;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
@@ -14,7 +13,7 @@ public class Main {
     private static Group group;
 
     public static void main(String[] args) {
-        group = new Group();
+        group = new Group("Default");
         fillGroup();
         ExecutorService eService = Executors.newFixedThreadPool(4);
         try (ServerSocket serverSocket = new ServerSocket(8080)){
@@ -26,7 +25,7 @@ public class Main {
         } catch (IOException ioe){
             ioe.printStackTrace();
         }
-     //       System.out.println("1 - Add Student, 2 - Sort, 3 - Print, 4 - Delete, 5 - Summon Voenkom, 6 - Save, 7 - Load, 8 - Filter, 0 - Exit");
+     //       System.out.println("1 - Add Student, 2 - Sort, 5 - Summon Voenkom, 6 - Save, 7 - Load, 8 - Filter");
     }
 
     private static void filterGroup() {
@@ -99,20 +98,6 @@ public class Main {
             case "5":
                 group.sort(Parameters.PERFORMANCE);
                 break;
-        }
-    }
-
-    private static void printStudents() {
-        System.out.println(group);
-    }
-
-    private static void deleteStudent() {
-        Scanner keyboardScanner = new Scanner(System.in);
-        System.out.print("Enter student LastName: ");
-        try {
-            group.delete(keyboardScanner.next());
-        } catch (InputMismatchException ime) {
-            System.out.println("Error deleting student: Student not found!");
         }
     }
 

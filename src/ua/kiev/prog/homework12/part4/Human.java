@@ -32,6 +32,6 @@ public class Human implements Serializable {
     }
 
     public String toString(){
-        return "First name: " + firstName + " Last name: " + lastName + " Age: " + age + " Sex: " + sex;
+        return "<td>" + firstName + "</td><td>" + lastName + "</td><td>" + age + "</td><td>" + sex + "</td>";
     }
 }

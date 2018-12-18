@@ -16,6 +16,8 @@ public class Student extends Human implements Serializable {
 
     @Override
     public String toString(){
-        return super.toString() + " Performance: " + performance;
+        return "<tr>" + super.toString() + "<td>" + performance + "</td><td><form action='/' method='post' target='_self'>" +
+                "<input type='submit' value='X'><input type='hidden' name='action' value='delete'><input type='hidden' name='group' value='@@groupname@@'>" +
+                "<input type='hidden' name='name' value='" + super.getLastName() +"'></form></td></tr>";
     }
 }
