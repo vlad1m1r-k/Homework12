@@ -1,0 +1,40 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Add Student</title>
+</head>
+<body>
+<br>
+<br>
+<form action="/" method="post" target="_self">
+    <input type="hidden" name="action" value="add">
+    <table>
+        <tr>
+            <td>First Name:</td>
+            <td><input type="text" maxlength="15" minlength="2" required name="firstname"></td>
+        </tr>
+        <tr>
+            <td>Last Name:</td>
+            <td><input type="text" maxlength="15" minlength="2" required name="lastname"></td>
+        </tr>
+        <tr>
+            <td>Age:</td>
+            <td><input type="number" max="100" min="2" required name="age"></td>
+        </tr>
+        <tr>
+            <td>Sex:</td>
+            <td><select name="sex" required>
+                <option value="MALE">Male</option>
+                <option value="FEMALE">Female</option>
+            </select></td>
+        </tr>
+        <tr>
+            <td>Academ. Perf.:</td>
+            <td><input type="number" max="100" min="0" required name="performance"></td>
+        </tr>
+    </table>
+    <input type="submit" value="Add">
+</form>
+<a href="/">Back to main page</a>
+</body>
+</html>

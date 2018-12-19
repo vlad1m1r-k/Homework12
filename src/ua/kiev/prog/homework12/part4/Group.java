@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.InputMismatchException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Group implements Serializable {
     private List<Student> students = new ArrayList<>();
@@ -81,6 +82,17 @@ public class Group implements Serializable {
                     else return 1;
                 });
         }
+    }
+
+    public String filter(String fChar) {
+        List<Student> filteredList = students.stream()
+                .filter(s -> s.getLastName().toLowerCase().charAt(0) == fChar.toLowerCase().charAt(0))
+                .collect(Collectors.toList());
+        String formattedStudents = "";
+        for (Student student : filteredList) {
+            formattedStudents += student + "\n";
+        }
+        return formattedStudents;
     }
 
     @Override

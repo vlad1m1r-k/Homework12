@@ -4,7 +4,10 @@ import java.io.*;
 import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
+import java.util.stream.Collectors;
 
 public class HttpClient implements Runnable {
     private CurrentGroup currentGroup;
@@ -43,28 +46,41 @@ public class HttpClient implements Runnable {
 
     private String formatPage(String type, String address, String form) {
         if (type.equals("GET")) {
-            return renderPage(address);
+            return renderPage(address, currentGroup.getGroup().toString());
         }
         if (type.equals("POST")) {
-            String action = form.substring(form.indexOf("=") + 1, form.indexOf("&"));
+            String action = form.substring(form.indexOf("=") + 1, form.indexOf("&") == -1 ? form.length() : form.indexOf("&"));
+            String value = form.substring(form.lastIndexOf("=") + 1, form.length());
             switch (action) {
                 case "delete":
-                    currentGroup.getGroup().delete(form.substring(form.lastIndexOf("=") + 1, form.length()));
-                    return renderPage(address);
+                    currentGroup.getGroup().delete(value);
+                    return renderPage(address, currentGroup.getGroup().toString());
                 case "save":
-                    return saveGroup(form.substring(form.lastIndexOf("=") + 1, form.length()).replaceAll("\\W",""));
+                    return saveGroup(value.replaceAll("\\W", ""));
                 case "load":
-                    loadGroup(form.substring(form.lastIndexOf("=") + 1, form.length()));
-                    return renderPage(address);
+                    loadGroup(value);
+                    return renderPage(address, currentGroup.getGroup().toString());
+                case "add":
+                    String result = addStudent(form);
+                    return renderPage(address, currentGroup.getGroup().toString()).replaceAll("<!--operationresult-->", result);
+                case "filter":
+                    return renderPage(address, currentGroup.getGroup().filter(value));
+                case "sort":
+                    currentGroup.getGroup().sort(Parameters.valueOf(value));
+                    return renderPage(address, currentGroup.getGroup().toString());
+                case "voenkom":
+                    return renderPage(address, summonVoenkom());
             }
         }
         return "Unknown action";
     }
 
-    private String renderPage(String address) {
+    private String renderPage(String address, String group) {
         StringBuilder result = new StringBuilder();
         result.append("HTTP/1.1 200 OK\n");
+        result.append("Cache-Control: no-cache, no-store, must-revalidate, max-age=1\n");
         result.append("Content-Type: text/html\n");
+        result.append("Connection: closed\n");
         result.append("\n");
         String name = address.equals("/") ? "/index.html" : address;
         try {
@@ -72,17 +88,18 @@ public class HttpClient implements Runnable {
         } catch (IOException e) {
             result = new StringBuilder("HTTP/1.1 404 Not Found");
             result.append("Content-Type: text/html\n");
+            result.append("Connection: closed\n");
             result.append("\n");
             e.printStackTrace();
             return result.toString();
         }
-        result = new StringBuilder(result.toString().replaceAll("@@grouplines@@", currentGroup.getGroup().toString()));
+        result = new StringBuilder(result.toString().replaceAll("@@grouplines@@", group));
         result = new StringBuilder(result.toString().replaceAll("@@groupname@@", currentGroup.getGroup().getGroupName()));
         result = new StringBuilder(result.toString().replaceAll("@@grouplist@@", getGroupList()));
         return result.toString();
     }
 
-    private String saveGroup(String name){
+    private String saveGroup(String name) {
         File file = new File("Groups/" + name + ".sav");
         if (file.exists() && !file.isDirectory()) file.delete();
         try (ObjectOutputStream output = new ObjectOutputStream(new FileOutputStream(file))) {
@@ -95,7 +112,7 @@ public class HttpClient implements Runnable {
         return "Successful saved.";
     }
 
-    private String getGroupList(){
+    private String getGroupList() {
         File dir = new File("Groups");
         File[] groups = dir.listFiles(path -> {
             if (!path.isDirectory() && !(path.getName().lastIndexOf(".") == -1) && path.getName().substring(path.getName().lastIndexOf(".")).equalsIgnoreCase(".sav"))
@@ -114,7 +131,7 @@ public class HttpClient implements Runnable {
         return result.toString();
     }
 
-    private void loadGroup(String name){
+    private void loadGroup(String name) {
         File file = new File("Groups/" + name + ".sav");
         if (!file.exists()) {
             return;
@@ -126,5 +143,28 @@ public class HttpClient implements Runnable {
         } catch (ClassNotFoundException cnfe) {
             cnfe.printStackTrace();
         }
+    }
+
+    private String addStudent(String form) {
+        List<String> values = Arrays.stream(form.split("&")).map(s -> s.replaceAll(".*=", "")).collect(Collectors.toList());
+        if (values.size() < 6) {
+            return "<font color='red'>Error adding student</font>";
+        }
+        try {
+            currentGroup.getGroup().add(new Student(values.get(1), values.get(2), Integer.valueOf(values.get(3)), Sex.valueOf(values.get(4)), Integer.valueOf(values.get(5))));
+        } catch (StudentOperationException soe) {
+            return "<font color='red'>Can not add more students. (max 10)</font>";
+        }
+        return "";
+    }
+
+    private String summonVoenkom() {
+        AngryVoenkom angryVoenkom = new AngryVoenkom();
+        List<Student> students = angryVoenkom.catchStudents(currentGroup.getGroup());
+        String formattedStudents = "";
+        for (Student student : students) {
+            formattedStudents += student + "\n";
+        }
+        return formattedStudents;
     }
 }
